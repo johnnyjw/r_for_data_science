@@ -284,7 +284,108 @@ ggplot(data = diamonds) +
   geom_bar(mapping = aes(x = cut, fill = clarity ))
 
 #28 non stacked bars
-#identity not very useful
+#identity - not very useful
 ggplot(data = diamonds,
        mapping = aes(x = cut, fill = clarity )) +
   geom_bar(alpha = 1/5, position = "identity")
+
+ggplot(data = diamonds,
+       mapping = aes(x = cut, color = clarity )) +
+  geom_bar(fill = NA, position = "identity")
+
+# fill
+ggplot(data = diamonds,
+       mapping = aes(x = cut, fill = clarity )) +
+  geom_bar(position = "fill")
+
+# dodge
+ggplot(data = diamonds,
+       mapping = aes(x = cut, fill = clarity )) +
+  geom_bar(position = "dodge")
+
+#p30 jitter
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy),
+             position = "jitter") 
+
+#p31 excercises
+#1
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() 
+
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point(position = "jitter") 
+#2
+?geom_jitter
+#3
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_jitter() 
+
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_count() 
+
+#4
+?geom_boxplot
+ggplot(data=mpg) +
+  geom_boxplot(mapping = aes(x = drv, y=cty))
+
+#p31 coordinate flip
+ggplot(data=mpg, mapping = aes(x = class, y=hwy)) +
+  geom_boxplot()
+
+ggplot(data=mpg, mapping = aes(x = class, y=hwy)) +
+  geom_boxplot() +
+  coord_flip()
+
+#p32 quickmap
+library(maps)
+nz <- map_data("nz")
+
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", color = "black")
+
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", color = "black") +
+  coord_quickmap()
+
+#polar coordinates
+bar <- ggplot(data = diamonds) +
+  geom_bar(
+    mapping = aes(x = cut, fill = cut),
+    show.legend = FALSE,
+    width = 1
+  ) +
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+
+bar + coord_polar()
+
+#exercises p33
+#1
+bar2 <- ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, fill = clarity )) +
+  labs(x = NULL, y = NULL)
+
+bar2 + coord_polar()
+
+#2
+?labs
+
+#3
+?coord_map
+?coord_quickmap
+
+#4
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() +
+  geom_abline() +
+  coord_fixed()
+
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() +
+  geom_abline()
+
+?coord_fixed
+?geom_abline
