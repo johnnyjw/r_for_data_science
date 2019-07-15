@@ -268,3 +268,23 @@ ggplot(data = demo) +
 
 #4
 ?stat_smooth
+
+#5
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, y = ..prop.. ))
+
+#p27 bar and color
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, colour = cut ))
+
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, fill = cut ))
+
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, fill = clarity ))
+
+#28 non stacked bars
+#identity not very useful
+ggplot(data = diamonds,
+       mapping = aes(x = cut, fill = clarity )) +
+  geom_bar(alpha = 1/5, position = "identity")
