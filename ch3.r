@@ -61,3 +61,96 @@ filter(flights, dep_delay < 5, arr_delay >= 120)
 
 filter(flights, dep_delay >= 60, arr_delay - dep_delay <= -30)
 filter(flights, dep_time < 600)
+
+#2
+?filter
+filter(flights, between(month, 7, 9))
+
+#3
+filter(flights, is.na(dep_time))
+
+#p50 arrange
+arrange(flights, year, month, day)
+
+arrange(flights, desc(arr_delay))
+
+#sorting with na
+df <- tibble(x = c(5, 2, NA))
+arrange(df, x)
+arrange(df, desc(x))
+
+#exercises p 51
+#1 missing values to top
+arrange(df, desc(is.na(x)))
+
+#2
+arrange(flights, desc(arr_delay))
+arrange(flights, dep_delay)
+
+#3
+flights$air_time
+flights$distance
+arrange(flights, desc(distance/air_time))
+
+#4
+arrange(flights, desc(air_time))
+arrange(flights, air_time)
+
+#p52 select
+select(flights, year, month, day)
+
+select(flights, year : day)
+
+select(flights, -(year : day))
+
+rename(flights, tail_num = tailnum)
+
+#order
+select(flights, time_hour, air_time, everything())
+
+#exercises p54
+#1
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+select(flights, starts_with("arr"), starts_with("dep"))
+select(flights, matches("^(arr|dep)"))
+#2
+select(flights, dep_time, year, dep_time)
+
+#3
+vars <- c(
+  "year", "month", "day", "dep_delay", "arr_delay"
+)
+
+select(flights, one_of(vars))
+
+#4
+select(flights, contains("TIME"))
+?contains
+select(flights, contains("TIME", ignore.case = FALSE))
+
+#p54 mutate
+flights_sml <- select(flights,
+                      year:day,
+                      ends_with("delay"),
+                      distance,
+                      air_time
+                      )
+
+mutate(flights_sml,
+       gain = arr_delay - dep_delay,
+       speed = distance / air_time * 60
+       )
+
+#bottom var relies on upper two
+mutate(flights_sml,
+       gain = arr_delay - dep_delay,
+       hours = air_time /  60,
+       gain_per_hour = gain / hours
+)
+
+#only keep new variables with transmute
+transmute(flights_sml,
+       gain = arr_delay - dep_delay,
+       hours = air_time /  60,
+       gain_per_hour = gain / hours
+)
