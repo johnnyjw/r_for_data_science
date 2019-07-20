@@ -154,3 +154,47 @@ transmute(flights_sml,
        hours = air_time /  60,
        gain_per_hour = gain / hours
 )
+
+#p56 modular attributes
+transmute(flights,
+          dep_time,
+          hour = dep_time %/% 100,
+          minute = dep_time %% 100
+          )
+
+#offsets
+(x <- 1:10)
+lag(x)
+lead(x)
+#cumulative
+cumsum(x)
+cummean(x)
+#rank 
+y <- c(1, 2, 3, NA, 3, 4, 2)
+min_rank(y)
+min_rank(desc(y))
+row_number(y)
+dense_rank(y)
+percent_rank(y)
+cume_dist(y)
+
+#p58 exercises
+#1
+transmute(flights,
+          dep_time,
+          dep_time_mpm = (dep_time %/% 100)* 60 + dep_time %% 100)
+
+#2
+transmute(flights,
+          air_time,
+          ari_time_min = (air_time %/% 100)* 60 + air_time %% 100,
+          dep_time,
+          dep_time_mpm = (dep_time %/% 100)* 60 + dep_time %% 100,
+          arr_time,
+          arr_time_mpm = (arr_time %/% 100)* 60 + arr_time %% 100,
+          dur = arr_time_mpm - dep_time_mpm)
+
+transmute(flights,
+          air_time,
+          sched_dep_time,
+          sched_arr_time)
