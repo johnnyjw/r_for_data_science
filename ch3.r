@@ -198,3 +198,231 @@ transmute(flights,
           air_time,
           sched_dep_time,
           sched_arr_time)
+
+#3
+transmute(flights,
+          dep_time
+          dep_time_mpm = (dep_time %/% 100)* 60 + dep_time %% 100,
+          sched_dep_time,
+          sched_dep_time_mpm = (sched_dep_time %/% 100)* 60 + sched_dep_time %% 100,
+          dep_delay,
+          calc_dep_delay = dep_time_mpm - sched_dep_time_mpm)
+
+#4
+transmute(flights,
+          year,
+          month,
+          day,
+          carrier,
+          flight,
+          arr_delay,
+          delay_rank = min_rank(desc(arr_delay))) %>%
+  arrange(delay_rank)
+
+#5
+1:3 + 1:10
+
+1:10 + 21:30
+
+#p59 group summaries
+summarize(flights, delay = mean(dep_delay, na.rm = TRUE))
+
+#grouped
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, delay =mean(dep_delay, na.rm = TRUE))
+
+#using pipe
+by_dest <- group_by(flights, dest)
+delay <- summarize(by_dest,
+                   count = n(),
+                   dist = mean(distance, na.rm = TRUE),
+                   delay = mean(arr_delay, na.rm = TRUE)
+                   )
+delay <- filter(delay, count > 20, dest != "HNL")
+
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+
+#doing same thing with a pipe
+delays <- flights %>%
+  group_by(dest) %>%
+  summarize(count = n(),
+            dist = mean(distance, na.rm = TRUE),
+            delay = mean(arr_delay, na.rm = TRUE)
+  ) %>%
+  filter(count > 20, dest != "HNL")
+
+#61 not using na.rm - will apply na rules and you get a lot of na's!
+flights %>%
+  group_by(year, month, day) %>%
+  summarize(mean = mean(dep_delay))
+
+flights %>%
+  group_by(year, month, day) %>%
+  summarize(mean = mean(dep_delay, na.rm = TRUE))
+
+#can filter out the cancelled flights first
+not_cancelled <- flights %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarize(mean = mean(dep_delay))
+
+#63 planes example
+delays <- not_cancelled %>%
+  group_by(tailnum) %>%
+  summarize(
+    delay = mean(arr_delay)
+  )
+
+ggplot(data = delays, mapping = aes(x = delay)) +
+  geom_freqpoly(binwidth = 10)
+
+#scatterplotting number of flights vs average delay
+delays <- not_cancelled %>%
+  group_by(tailnum) %>%
+  summarize(
+    delay = mean(arr_delay, na.rm = TRUE),
+    n = n()
+  )
+
+ggplot(data = delays, mapping = aes(x = n, y = delay)) +
+  geom_point(alpha = 1/10)
+
+#filter out low nums and incororate ggplot2 into deplyr flows
+delays %>%
+  filter(n > 25) %>%
+  ggplot(mapping = aes(x = n, y = delay)) +
+    geom_point(alpha = 1/10)
+
+#p65 another example of a n vs variation, this time batting scores
+batting <- as_tibble(Lahman::Batting)
+
+batters <- batting %>%
+  group_by(playerID) %>%
+  summarize(
+    ba = sum(H, na.rm = TRUE) / sum(AB, na.rm = TRUE),
+    ab = sum(AB, na.rm = TRUE)
+  )
+
+batters %>%
+  filter(ab > 100)%>%
+  ggplot(mapping = aes(x = ab, y = ba)) +
+    geom_point() +
+    geom_smooth(se = FALSE)
+
+#if you sort on batting average without filtering small at bat numbers
+#then you just get flukies
+batters %>%
+  arrange(desc(ba))
+
+#aggregating using a logical subset (arr_delay[arr_delay > 0])
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarize(
+    #average delay
+    avg_delay = mean(arr_delay),
+    #av positive delay:
+    avg_delay2 = mean(arr_delay[arr_delay > 0])
+  )
+
+#p67 - spread
+not_cancelled %>%
+  group_by(dest) %>%
+  summarize(distance_sd = sd(distance)) %>%
+  arrange(desc(distance_sd))
+
+#68 quantiles
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarize(
+    first = min(dep_time),
+    last = max(dep_time)
+  )
+
+#measures of position
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarize(
+    first_dep = first(dep_time),
+    last_dep = last(dep_time)
+  )
+
+#if you filter on ranks you get all the variables and first and last on separate rows
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  mutate(r = min_rank(desc(dep_time))) %>%
+  filter(r %in% range(r))
+
+#counts
+not_cancelled %>%
+  group_by(dest) %>%
+  summarize(carriers = n_distinct(carrier)) %>%
+  arrange(desc(carriers))
+
+# dplyr's count 
+not_cancelled %>%
+  count(dest)
+
+# with a weight
+not_cancelled %>%
+  count(tailnum, wt=distance)
+
+#counts and proportions of lovigal values
+#how many flights left before 5am?  (departures delayed from previous day)
+not_cancelled %>%
+  group_by(year, month, day) %>%
+  summarize(n_early = sum(dep_time < 500))
+
+# proportion of flights delayed more than an hour
+not_cancelled %>%
+  group_by(year, month, day) %>% 
+  summarise(hour_perc = mean(arr_delay > 60))
+
+#multiple variables
+daily <- group_by(flights, year, month, day)
+(per_day <- summarise(daily, flights = n()))
+(per_month <- summarise(per_day, flights = sum(flights)))
+(per_year <- summarise(per_month, flights = sum(flights)))
+
+#p 72 ungrouping
+daily %>%
+  ungroup() %>%
+  summarize(flights = n())
+
+#exercises p 72
+flights
+#1
+#average
+not_cancelled %>% 
+  group_by(carrier, flight) %>% 
+  summarise(av_delay = mean(dep_delay),
+            n = n()) %>%
+  filter(n > 3) %>%
+  arrange(desc(av_delay))
+#median
+not_cancelled %>% 
+  group_by(carrier, flight) %>% 
+  summarise(av_delay = median(dep_delay),
+            n = n()) %>%
+  filter(n > 3) %>%
+  arrange(desc(av_delay))
+#proportion
+not_cancelled %>% 
+  group_by(carrier, flight) %>% 
+  summarise(over_five = mean(dep_delay>5),
+            n = n()) %>%
+  filter(n > 3) %>%
+  arrange(desc(over_five))
+#greatest variation in lateness
+not_cancelled %>% 
+  group_by(carrier, flight) %>% 
+  summarise(min_delay = min(dep_delay),
+            max_delay = max(dep_delay),
+            n = n()) %>%
+  mutate(del_range = max_delay-min_delay) %>%
+  filter(n > 3) %>%
+  arrange(desc(del_range))
+  
