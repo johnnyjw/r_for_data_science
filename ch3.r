@@ -425,4 +425,53 @@ not_cancelled %>%
   mutate(del_range = max_delay-min_delay) %>%
   filter(n > 3) %>%
   arrange(desc(del_range))
-  
+
+#always late
+not_cancelled %>% 
+  group_by(carrier, flight) %>% 
+  summarise(min_delay = min(dep_delay),
+            n = n()) %>%
+  filter(n > 3,
+         min_delay > 5) %>%
+  arrange(desc(min_delay))
+
+#2
+not_cancelled %>% 
+  count(dest)
+
+not_cancelled %>% 
+  group_by(dest) %>% 
+  summarize(n = n())
+
+not_cancelled %>% 
+  count(tailnum, wt = distance)
+
+not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarize(n = sum(distance))
+
+#4 support cancelled flights
+cancelled <- flights %>%
+  filter(is.na(dep_delay) | is.na(arr_delay))
+
+cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n))
+
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarize(av_delay = mean(dep_delay)) %>% 
+  arrange(desc(av_delay))
+
+#5
+not_cancelled %>%
+  group_by(carrier) %>% 
+  summarize(av_delay = mean(dep_delay)) %>% 
+  arrange(desc(av_delay))
+
+not_cancelled %>%
+  group_by(carrier, dest) %>% 
+  summarize(av_delay = mean(dep_delay),
+            n = n()) %>% 
+  arrange(desc(av_delay))
