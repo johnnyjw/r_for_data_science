@@ -475,3 +475,15 @@ not_cancelled %>%
   summarize(av_delay = mean(dep_delay),
             n = n()) %>% 
   arrange(desc(av_delay))
+
+#6
+not_cancelled %>%
+  group_by(tailnum) %>% 
+  arrange(tailnum, year, month, day) %>% 
+  mutate(cumdelay = cumsum(arr_delay>60)) %>% 
+  summarize(nodelay = sum(ifelse(cumdelay==0, 1, 0)),
+         n = n()) %>%
+  arrange(desc(nodelay))
+
+cummy$cumdelay
+cummy %>% count(tailnum, wt=(ifelse(cumdelay==0, 1, 0)))
