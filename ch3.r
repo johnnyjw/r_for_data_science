@@ -486,4 +486,53 @@ not_cancelled %>%
   arrange(desc(nodelay))
 
 cummy$cumdelay
-cummy %>% count(tailnum, wt=(ifelse(cumdelay==0, 1, 0)))
+
+#7
+?count
+
+#p73 grouped mutates
+flights_sml %>% 
+  group_by(year, month, day) %>% 
+  filter(rank(desc(arr_delay)) < 10)
+
+popular_dests <- flights %>% 
+  group_by(dest) %>% 
+  filter(n() > 365)
+
+popular_dests %>% 
+  filter(arr_delay > 0) %>% 
+  mutate(prop_delay = arr_delay / sum(arr_delay)) %>% 
+  select(year:day, dest, arr_delay, prop_delay)
+
+#p75 exercises
+vignette("window-functions")
+
+?lag
+a <- 1:10
+b <- c('a', 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b')
+c <- c(1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
+gg <- tibble(a=c(1, 2, 3, 4, 5, 1, 2, 3, 4, 5),
+             b=c('a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'b'),
+             c=1:10)
+gg %>% 
+  group_by(b) %>% 
+  mutate(d = lag(c),
+         e = cumsum(c),
+         f = min_rank(c))
+#2 plane with worst on time record
+not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarize(late_prop = mean(arr_delay > 5),
+            n = n()) %>% 
+  filter(n>10) %>% 
+  mutate(late_rank = min_rank(desc(late_prop))) %>% 
+  arrange(late_rank)
+
+#3 dep delay by time
+not_cancelled %>% 
+  group_by(sched_dep_time) %>% 
+  summarize(late_prop = mean(dep_delay > 5),
+            n = n()) %>%
+  filter(n>10) %>% 
+  mutate(late_rank = min_rank(late_prop)) %>% 
+  arrange(late_rank)
