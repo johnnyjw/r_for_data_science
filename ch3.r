@@ -536,3 +536,39 @@ not_cancelled %>%
   filter(n>10) %>% 
   mutate(late_rank = min_rank(late_prop)) %>% 
   arrange(late_rank)
+
+#4
+not_cancelled %>%
+  group_by(dest) %>% 
+  mutate(act_delay = ifelse(arr_delay<0,0,arr_delay),
+         tot_delay = sum(act_delay),
+         prop_delay = arr_delay/tot_delay) %>% 
+  select(year, month, day, flight, dest, arr_delay, tot_delay, prop_delay) %>% 
+  arrange(desc(prop_delay))
+
+#5 delay
+not_cancelled %>% 
+  arrange(year, month, day, dep_time) %>% 
+  transmute(year, month, day, dep_time,
+            dep_delay,
+            prev_dep = lag(dep_delay)) %>% 
+  arrange(desc(dep_delay)) %>% 
+  filter(dep_delay < 120)
+
+# 6
+colnames(not_cancelled)
+not_cancelled %>% 
+  group_by(dest) %>% 
+  transmute(air_time,
+            mean_air = mean(air_time),
+            big_gap = mean_air - air_time) %>%
+  filter(air_time < 100)
+  arrange(desc(big_gap))
+
+# 7
+not_cancelled %>% 
+  group_by(dest, carrier) %>% 
+  summarize(mean_del = mean(arr_delay)) %>%
+  mutate(n_carr = n()) %>% 
+  filter(n_carr>1) %>% 
+  arrange(dest, mean_del)
