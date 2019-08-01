@@ -152,3 +152,47 @@ ggplot(
 #boxplot p 96
 ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
   geom_boxplot()
+
+#p97 reordering
+ggplot(data = mpg) +
+  geom_boxplot(
+    mapping = aes(
+      x = reorder(class, hwy, FUN = median),
+      y = hwy
+    )
+  )
+
+#horizontal
+ggplot(data = mpg) +
+  geom_boxplot(
+    mapping = aes(
+      x = reorder(class, hwy, FUN = median),
+      y = hwy
+    )
+  ) +
+  coord_flip()
+
+
+#exercises page 99
+#1 change cancelled/noncancelled visualization
+nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  ) %>% 
+  ggplot(mapping = aes(x = sched_dep_time, y = ..density..)) +
+  geom_freqpoly(
+    mapping = aes(color = cancelled),
+    binwidth = 1/4
+  )
+
+#2
+colnames(diamonds)
+ggplot(data=diamonds) +
+  geom_point(mapping = aes(x=carat, y=price))
+
+colnames(diamonds)
+ggplot(data=diamonds) +
+  geom_freqpoly(mapping = aes(x = carat, y = ..density.., colour=cut))
