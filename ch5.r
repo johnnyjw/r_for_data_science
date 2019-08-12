@@ -196,3 +196,33 @@ ggplot(data=diamonds) +
 colnames(diamonds)
 ggplot(data=diamonds) +
   geom_freqpoly(mapping = aes(x = carat, y = ..density.., colour=cut))
+
+#3
+require(ggstance)
+require(lvplot)
+ggplot(data = mpg) +
+  geom_boxplot(
+    mapping = aes(
+      x = reorder(class, hwy, FUN = median),
+      y = hwy
+    )
+  ) +
+  coord_flip()
+
+ggplot(data = mpg) +
+  geom_boxploth(
+    mapping = aes(
+      y = reorder(class, hwy, FUN = median),
+      x = hwy
+    )
+)
+
+ggplot(data=diamonds) +
+  geom_lv(
+    mapping=aes(y=price, x=cut)
+  )
+
+#5
+ggplot(data=diamonds) +
+  geom_violin(mapping = aes(x=cut, y=price))
+
