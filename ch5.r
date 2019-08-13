@@ -217,6 +217,7 @@ ggplot(data = mpg) +
     )
 )
 
+#4
 ggplot(data=diamonds) +
   geom_lv(
     mapping=aes(y=price, x=cut)
@@ -226,3 +227,45 @@ ggplot(data=diamonds) +
 ggplot(data=diamonds) +
   geom_violin(mapping = aes(x=cut, y=price))
 
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(price)) +
+  facet_grid(cut ~ .)
+
+ggplot(data=diamonds) +
+  geom_freqpoly(mapping = aes(colour=cut, x=price, y=..density..))
+
+
+
+#p99 two categorical variables
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = cut, y = color))
+
+#straight count
+diamonds %>% 
+  count(color, cut)
+
+#...and visualise using geom_tile
+diamonds %>% 
+  count(color, cut) %>% 
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+
+#p101 exs
+#proportion of quality in color
+diamonds %>%
+  group_by(color, cut) %>% 
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n)) %>% 
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = freq))
+
+#proportion of colours in each
+
+quality
+diamonds %>%
+  group_by(cut, color) %>% 
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n)) %>% 
+  ggplot(mapping = aes(x = color, y = cut)) +
+  geom_tile(mapping = aes(fill = freq))
+  mutate()
