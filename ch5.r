@@ -251,6 +251,7 @@ diamonds %>%
     geom_tile(mapping = aes(fill = n))
 
 #p101 exs
+#1
 #proportion of quality in color
 diamonds %>%
   group_by(color, cut) %>% 
@@ -268,4 +269,122 @@ diamonds %>%
   mutate(freq = n / sum(n)) %>% 
   ggplot(mapping = aes(x = color, y = cut)) +
   geom_tile(mapping = aes(fill = freq))
-  mutate()
+
+
+#2
+library(nycflights13)
+not_cancelled <- flights %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+  
+not_cancelled %>% 
+  group_by(dest, month) %>% 
+  summarise(mean = mean(dep_delay)) %>% 
+  ggplot(mapping = aes(x = dest, y = month)) +
+  geom_tile(mapping = aes(fill = mean))
+
+#2 an improvement
+not_cancelled %>% 
+  group_by(dest, month) %>% 
+  summarise(mean = mean(dep_delay),
+            n = n()) %>% 
+  group_by(dest) %>% 
+  mutate(total = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(rank = dense_rank(desc(total))) %>% 
+  filter(rank <= 30) %>% 
+  ggplot(mapping = aes(x = dest, y = month)) +
+    geom_tile(mapping = aes(fill = mean))
+
+#3
+diamonds %>% 
+  count(color, cut) %>% 
+  ggplot(mapping = aes(x = cut, y = color)) +
+    geom_tile(mapping = aes(fill = n))
+
+#p101 two continuous variables - not so great when lots of points
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = carat, y = price))
+
+# adding some alpha to help with numerous points
+ggplot(data = diamonds) +
+  geom_point(
+    mapping = aes(x = carat, y = price),
+             alpha = 1 / 100
+             )
+
+#bin in 2 directions
+ggplot(data = smaller) +
+  geom_bin2d(mapping = aes(x = carat, y = price))
+
+library(hexbin)
+ggplot(data = smaller) +
+  geom_hex(mapping = aes(x = carat, y = price))
+
+# or bin one continuous variable so it acts like a categorical variable
+ggplot(data = smaller, mapping = aes(x = carat, y = price)) +
+  geom_boxplot(mapping = aes(group = cut_width(carat, 0.1)))
+
+# vary width
+ggplot(data = smaller, mapping = aes(x = carat, y = price)) +
+  geom_boxplot(mapping = aes(group = cut_width(carat, 0.1)),
+               varwidth = TRUE)
+
+#cut_number()
+ggplot(data = smaller, mapping = aes(x = carat, y = price)) +
+  geom_boxplot(mapping = aes(group = cut_number(carat, 20)))
+
+#exercises p 104
+#1
+ggplot(data = smaller, mapping = aes(x = carat)) +
+  geom_freqpoly(mapping = aes(color = cut_width(price, 5000), y = ..density..))
+
+ggplot(data = smaller, mapping = aes(x = carat)) +
+  geom_freqpoly(mapping = aes(color = cut_number(price, 5)))
+
+#2 carat partitioned by price
+ggplot(data = smaller, mapping = aes(y = carat, x = price)) +
+  geom_boxplot(mapping = aes(group = cut_number(price, 5)))
+
+ggplot(data = smaller, mapping = aes(y = carat, x = price)) +
+  geom_boxplot(mapping = aes(group = cut_width(price, 5000)))
+
+#3 larger vs smaller
+ggplot(data = diamonds, mapping = aes(x = carat, y = price)) +
+  geom_boxplot(mapping = aes(group = cut_number(carat, 4)))
+
+ggplot(data = diamonds, mapping = aes(x = carat, y = price)) +
+  geom_boxplot(mapping = aes(group = cut_width(carat, 1)))
+
+#4
+ggplot(data = diamonds, mapping = aes(x = carat, y = price)) +
+  geom_boxplot(mapping = aes(group = cut_width(carat, 1))) +
+  facet_grid(cut ~ .)
+
+#p 105 scatters
+ggplot(data = faithful) +
+  geom_point(mapping = aes(x = eruptions, y = waiting))
+
+#making a linear model and extracting residuals
+library(modelr)
+
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+
+diamonds2 <- diamonds %>%
+  add_residuals(mod) %>% 
+  mutate(resid = exp(resid))
+
+ggplot(data = diamonds2) +
+  geom_point(mapping = aes(x = carat, y = resid))
+
+ggplot(data = diamonds2) +
+  geom_boxplot(mapping = aes(x = cut, y = resid))
+
+#consice plotting
+ggplot(faithful, aes(eruptions)) +
+  geom_freqpoly(binwidth = 0.25)
+
+#and quickly getting data into ggplot
+diamonds %>% 
+  count(cut, clarity) %>% 
+  ggplot(aes(clarity, cut, fill = n)) +
+    geom_tile()
