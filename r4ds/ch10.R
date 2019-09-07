@@ -246,3 +246,117 @@ flights %>%
     geom_point()
 ###storms on 13 June 2013
 
+#188 filtering joins
+top_dest <- flights %>% 
+  count(dest, sort = TRUE) %>% 
+  head(10)
+
+top_dest
+
+flights %>% 
+  filter(dest %in% top_dest$dest)
+
+#but simpler way
+flights %>% 
+  semi_join(top_dest)
+
+###anti join
+flights %>% 
+  anti_join(planes, by = "tailnum") %>% 
+  count(tailnum, sort = TRUE)
+
+#p191 exercises
+#1
+flights %>%
+  filter(is.na(tailnum))
+
+flights %>%
+  filter(is.na(tailnum) & !(is.na(sched_dep_time)))
+
+no_match <- flights %>%
+  filter(!(is.na(tailnum))) %>% 
+  anti_join(planes, by="tailnum") %>% 
+  group_by(tailnum) %>% 
+  summarise(count = n()) %>% 
+  arrange(count)
+  
+#2
+hundred <- flights %>% 
+  group_by(tailnum) %>% 
+  summarize(n = n()) %>% 
+  filter(n >= 100)
+
+flights %>%
+  semi_join(hundred, by="tailnum")
+
+
+#3
+top20 <- fueleconomy::common %>% 
+  arrange(desc(n)) %>% 
+  head(20)
+
+fueleconomy::vehicles %>% 
+  semi_join(top20, by=c('make', 'model'))
+
+#4 choosing the worst 48 hours
+worst <- flights %>% 
+  mutate(hour = sched_dep_time %/% 100) %>% 
+  group_by(year, month, day, hour) %>% 
+  summarize(av_del = mean(dep_delay)) %>% 
+  arrange(desc(av_del)) %>% 
+  head(48)
+
+slowies <- weather %>% 
+  semi_join(worst, by=c('year', 'month', 'day', 'hour'))
+
+best <- flights %>% 
+  mutate(hour = sched_dep_time %/% 100) %>% 
+  group_by(year, month, day, hour) %>% 
+  summarize(av_del = mean(dep_delay)) %>% 
+  arrange(av_del) %>% 
+  head(48)
+
+fasties <- weather %>% 
+  semi_join(best, by=c('year', 'month', 'day', 'hour'))
+
+###some relationship with windspeed, humidity, precipitation, gusts
+
+#5
+anti_join(flights, airports, by  = c("dest" = "faa"))
+###this shows flights for which the destination is not in the airports list
+anti_join(airports, flights, by = c("faa" = "dest"))
+####this shows arports on the list who are not used as a destination
+
+#6 is there a relationship between tailnum and airline - is each plane by a single airline
+dual <- flights %>% 
+  select(tailnum, carrier) %>% 
+  unique() %>% 
+  group_by(tailnum) %>% 
+  mutate(carrier_ct = n()) %>% 
+  ungroup() %>% 
+  filter(carrier_ct > 1) %>% 
+  arrange(tailnum, carrier) %>% 
+  left_join(airlines)
+
+####it is in general true that there is a relationship between plane and airline, but there are some examples of 
+### more than one airline that flies with the same plane
+
+
+###p192 set operations
+df1 <- tribble(
+  ~x,   ~y,
+  1, 1,
+  2, 1
+)
+
+df2 <- tribble(
+  ~x,  ~y,
+  1,   1,
+  1,  2
+  )
+
+dplyr::intersect(df1, df2)
+dplyr::union(df1, df2)
+
+dplyr::setdiff(df1, df2)
+dplyr::setdiff(df2, df1)
