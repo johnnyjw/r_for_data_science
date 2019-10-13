@@ -238,3 +238,142 @@ flights_dt %>%
   geom_bar()
 
 # both are focussed on particular whole numbers
+
+#7
+flights_dt %>% 
+  mutate(dep_min = as.numeric(minute(dep_time)),
+         sched_dep_min = as.numeric(minute(sched_dep_time))) %>% 
+  filter((dep_min<30 & dep_min>=20) |
+           (dep_min<=59 & dep_min>=50)) %>% 
+  filter(dep_delay<0) %>% 
+  ggplot(aes(sched_dep_min)) +
+  geom_histogram()
+  
+#p249 durations
+#how old is hadley?
+h_age <- today() - ymd(19791014)
+h_age
+
+#convert to lubridate duration
+as.duration(h_age)
+
+dseconds(15)
+dminutes(10)
+dhours(c(12, 24))
+ddays(0:5)
+dweeks(1)
+dyears(1)
+
+#add multiply etc
+2 * dyears(1)
+dyears(1) + dweeks(12) + dhours(15)
+
+#durations in calculations
+tomorrow <- today() + ddays(1)
+last_year <- today() - dyears(1)
+tomorrow
+last_year
+
+####where this falls down
+one_pm <- ymd_hms(
+  "2016-03-12 13:00:00",
+  tz = "America/New_York"
+)
+one_pm
+one_pm + ddays(1)
+
+###using periods instead
+one_pm
+one_pm + days(1)
+
+#making periods
+seconds(15)
+minutes(10)
+hours(c(12, 24))
+days(7)
+months(1:6)
+weeks(3)
+years(1)
+
+
+#operations with periods
+10 * (months(6) + days(1))
+days(50) + hours(25) + minutes(2)
+
+#adding periods to times
+ymd("2016-01-01") + dyears(1)
+ymd("2016-01-01") + years(1)
+
+####fix after midnight
+flights_dt %>% 
+  filter(arr_time < dep_time) %>% 
+  select(arr_time, dep_time)
+
+flights_dt <- flights_dt %>% 
+  mutate(
+    overnight = arr_time < dep_time,
+    arr_time = arr_time + days(overnight * 1),
+    sched_arr_time = sched_arr_time + days(overnight * 1)
+  )
+
+flights_dt %>% 
+  filter(overnight, arr_time < dep_time)
+
+#Intervals
+years(1) / days(1)
+
+next_year <- today() + years(1)
+next_year
+
+(today() %--% next_year) / ddays(1)
+
+(today() %--% next_year) / days(1)
+
+#exs p 253
+#3
+base <-  ymd("2015-01-01")
+month_vec <- base %>%
+  update(month = 1:12)
+month_vec
+
+base2 <-  today()
+month_vec2 <- base2 %>%
+  update(mday = 1, month = 1:12)
+month_vec2
+
+#4 birthday function
+birth <- function(bdate){
+  as.numeric(today() - bdate) %/% 365
+}
+
+birth(ymd("1972-07-26"))
+
+#5
+(today()  %--% (today() + years(1)))/months(1)
+
+
+##timezones
+Sys.timezone()
+
+length(OlsonNames())
+head(OlsonNames())
+
+#timezones
+(x1 <- ymd_hms("2015-06-01 12:00:00", tz="America/New_York"))
+(x2 <- ymd_hms("2015-06-01 18:00:00", tz="Europe/Copenhagen"))
+(x3 <- ymd_hms("2015-06-02 04:00:00", tz="Pacific/Auckland"))
+x1-x2
+x1-x3
+
+x4 <- c(x1, x2, x3)
+x4
+
+#change timezone displayed but NOT the point in time
+x4a <- with_tz(x4, tzone = "Australia/Lord_Howe")
+x4a
+x4a-x4
+
+#keep the base number the same but change the point in time
+x4b <- force_tz(x4, tzone = "Australia/Lord_Howe")
+x4b
+x4b - x4
