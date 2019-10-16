@@ -1,3 +1,5 @@
+library(stringr)
+
 ###shoulda dunnna function
 df <- tibble::tibble(
   a = rnorm(10),
@@ -127,3 +129,88 @@ both_na <- function(x, y){
 x <- c(NA, NA, 2, 3, NA, 1)
 y <- c(NA, NA, 1, 2, 3, 4)
 both_na(x, y)
+
+#6
+x <- 'test'
+x <- c('test', 'ch8.R')
+file.info(x)$isdir
+
+file.access(x, 4) == 0
+
+#7
+foo_foo <- function(x) {
+  str_c(x, "Little Bunny Foo Foo,\n")
+}
+
+hop <- function(x) {
+  str_c(x,"Hopping through the Forest,\n")
+}
+
+scoop <- function(x) {
+  str_c(x,"Scooping up the field mice\n")
+}
+
+boppin <- function(x) {
+  str_c(x,"And boppin' 'em on the head.\n\n")
+}
+
+bopping <- function(x) {
+  str_c(x,"And bopping them on the head.\n\n")
+}
+
+fairy_godmother <- function(x) {
+  str_c(x, "(Spoken)\nDown came the Good Fairy, and she said,\n\n") %>% 
+    foo_foo() %>%
+    str_c("I don't want to see you,\n") %>% 
+    scoop() %>% 
+    bopping()
+}
+
+bunny_verse <- function(x) {
+  foo_foo(x) %>% 
+    hop() %>% 
+    scoop() %>% 
+    boppin()
+}
+
+chances3 <- function(x) {
+  str_c(x, "(Spoken)\nI'll give you three chances,\n")
+}
+
+chances2 <- function(x) {
+  str_c(x, "(Spoken)\nI'll give you two chances,\n")
+}
+
+chances1 <- function(x) {
+  str_c(x, "(Spoken)\nI'll give you one chance,\n")
+}
+
+chances0 <- function(x) {
+  str_c(x, "(Spoken)\nI gave you three chances,\n") %>% 
+    str_c("And you didn't behave,\nNow you're a goon. POOF!\n")
+}
+
+warn <- function(x) {
+  str_c(x, "And if you don't behave,\nI'll turn you into a goon!\n\n")
+}
+
+comb <- "" %>% 
+  bunny_verse() %>% 
+  fairy_godmother() %>% 
+  chances3() %>% 
+  warn() %>% 
+  bunny_verse() %>% 
+  fairy_godmother() %>% 
+  chances2() %>% 
+  warn() %>% 
+  bunny_verse() %>%
+  fairy_godmother() %>% 
+  chances1() %>% 
+  warn() %>% 
+  bunny_verse() %>%
+  fairy_godmother() %>% 
+  chances0()
+
+cat(comb)
+
+#exercises p273
