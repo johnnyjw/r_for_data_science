@@ -1,4 +1,6 @@
 library(stringr)
+library(lubridate)
+library(tidyverse)
 
 ###shoulda dunnna function
 df <- tibble::tibble(
@@ -214,3 +216,258 @@ comb <- "" %>%
 cat(comb)
 
 #exercises p273
+#1
+f1 <- function(string, prefix) {
+  substr(string, 1, nchar(prefix)) == prefix
+}
+
+f1("flip_you_melonfarmer", "flip")
+f1("flip_you_melonfarmer", "flit")
+
+f2 <- function(x){
+  if (length(x) <= 1) return(NULL)
+  x[-length(x)]
+}
+
+f2("Whats going on Geezer")
+
+f2(c("doosh", "poosh"))
+length(c("doosh", "poosh"))
+
+f3 <- function(x, y) {
+  rep(y, length.out = length(x))
+}
+
+f3(c("a", "b"), "doosh")
+
+#3
+?rnorm
+?MASS::mvrnorm()
+)
+
+MASS::mvrnorm(20, mu=1, Sigma=1  )
+
+rnorm(20)
+
+#276 Conditional Execution
+has_name <- function(x) {
+  nms <- names(x)
+  if (is.nul(nms)) {
+    rep(FALSE, length(x))
+  } else {
+    !is.na(nms) & nms != ""
+  }
+}
+
+#must be true or false
+if (c(TRUE, FALSE)) {}
+kf (NA) {}
+
+#using identical
+identical(0, 0L)
+
+x <- sqrt(2) ^ 2
+
+identical(x, 2)
+
+###exs p279
+#1 if is a statement/control structure, ifelse() is a function
+# ifelse can take vectors
+
+g <- 34
+ifelse(g > 3, "doosh")
+
+if (g>3) "doosh"  
+
+ifelse(g>333, "doosh", "antidoosh")
+if (g>333) "doosh" else "antidoosh"
+
+g <- c(2, 66, 88)
+ifelse(g>77, "doosh", "antidoosh")
+if (g>333) "doosh" else "antidoosh"
+
+#2
+greet <- function(time=lubridate::now()) {
+  if (hour(time) < 12) {
+    cat("Good Morning")
+  }  else if (hour(time) < 5) {
+    cat("Good Afternoon")
+  } else {
+    cat("Good Evening")
+  }
+}
+
+greet()
+
+#3 fizzbuzz
+fizzbuzz <- function (number) {
+  if (identical(number %% 3,0) &&
+    identical(number %% 5, 0)) {
+      cat("fizzbuzz")} 
+  else if (identical(number %% 3, 0)) {
+    cat("fizz")
+  } else if ( identical(number %% 5, 0)) {
+    cat("buzz")
+  } else cat(number)
+}
+
+fizzbuzz(2)
+fizzbuzz(15)
+
+#4
+?cut
+
+temp_class <- function(temp) {
+    cut(temp, breaks = c(-100, 0,10,20,30,100), 
+        labels = c("freezing", "cold", "cool", "warm", "hot"))}
+
+temp_class(c(0, 10, 20, 30, 40))
+
+temp_class <- function(temp) {
+  cut(temp, breaks = c(-100, 0,10,20,30,100), 
+      labels = c("freezing", "cold", "cool", "warm", "hot"),
+      right = FALSE)}
+
+temp_class(c(0, 10, 20, 30, 40))
+
+#cut converts into categories so not running through if nested conditionals...more efficent
+
+#5
+?switch
+switch(5,
+       5 = "five",
+       10 = "ten"
+       )
+
+test_it <- function (num){
+  switch(num,
+         '5' = "five",
+         '10' = "ten",
+         stop("not five or ten")
+  )
+}
+
+switch(2,
+       "one",
+       "two")
+test_it(5)
+test_it("6")
+#switch works differently if the first arguement is a number
+#it then returns the nth arguement related to n
+
+
+#6 test another switch
+test_two <- function(test){
+  switch(test,
+         a = ,
+         b = "ab",
+         c = ,
+         d = "cd",
+         "others")
+}
+
+test_two('e')
+#switch a and c return the ones below, as this is what happens
+# when an implicit return value is not supplied
+# if an unnamed value provided, that is default, otherwise nothing
+
+#function arguements
+mean_ci <- function(x, conf = 0.95){
+  se <- sd(x) / sqrt(length(x))
+  alpha <- 1 - conf
+  mean(x) + se*qnorm(c(alpha / 2, 1 - alpha / 2))
+  }
+
+x <- runif(100)
+mean_ci(x)
+mean_ci(x, conf = 0.99)
+
+#checking values
+wt_mean <- function(x, w, na.rm = FALSE) {
+  if (length(x) != length(w)) {
+    stop("'x' and 'w' must be the same length ", call = FALSE)
+  }
+  sum(w * x) / sum(x)
+}
+
+wt_mean(c(1,2,3), c(2,3,5))
+wt_mean(c(1,2,3), c(2,3))
+
+wt_mean <- function(x, w, na.rm = FALSE) {
+  stopifnot(is.logical(na.rm), length(na.rm) == 1)
+  stopifnot(length(x) == length(w))
+  
+  if (na.rm) {
+    miss <- is.na(x) | is.na(w)
+    x <- x[!miss]
+    w <- w[!miss]
+  }
+  sum(w * x) / sum(x)
+}
+
+wt_mean(1:6, 6:1, na.rm = "foo")
+
+#dot-dot-dot
+commas <- function(...) stringr::str_c(..., collapse =  ",")
+commas(letters[1:10])
+
+rule <- function(..., pad = "-") {
+  title <- paste0(...)
+  width <- getOption("width") - nchar(title) - 5
+  cat(title, " ", stringr::str_dup(pad, width), "\n", sep="")
+}
+rule("Important output")
+rule("hate", "that")
+
+x <- c(1,2)
+sum(x, na.mr = TRUE)
+#the mr is a mistake but not caught
+
+#ex p 284
+#1
+commas(latters[1:10], collapse = '-')
+#2
+rule("Title", pad = "-+")
+rule_more <- function(..., pad = "-") {
+  title <- paste0(...)
+  width <- (getOption("width") - (nchar(title)) - 5) / nchar(pad)
+  cat(title, " ", stringr::str_dup(pad, width), "\n", sep="")
+}
+rule_more("Important output", pad = "-+./")
+rule_more("Important output" )
+#3
+?mean
+to_mean <- c(1,50,99, 34, 55, 77, 44, 77, 20, 80, 999999)
+mean(to_mean)
+mean(to_mean, trim=0.1)
+#4
+?cor
+
+cor(1:10, 2:11, method="spearmen")
+
+#side effect function
+show_missings <- function(df) {
+  n <- sum(is.na(df))
+  cat("Missing values: ", n, "\n", sep = "")
+  invisible(df)
+}
+
+show_missings(mtcars)
+x <- show_missings(mtcars)
+class(x)
+dim(x)
+
+mtcars %>% 
+  show_missings() %>% 
+  mutate(mpg = ifelse(mpg < 20, NA, mpg)) %>% 
+  show_missings
+
+#enviornment
+funcie <- function(x){
+  x + y
+}
+
+y <- 100
+funcie(10)
+y <- 1000
+funcie(10)
