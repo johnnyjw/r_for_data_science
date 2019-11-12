@@ -271,6 +271,10 @@ show_mean(iris)
 
 ?round
 
+
+#4
+mtcars_two <- mtcars
+
 trans <- list(
   disp = function(x) x * 0.0163871,
   am = function(x) {
@@ -280,3 +284,224 @@ trans <- list(
 for (var in names(trans)) {
   mtcars[[var]] <- trans[[var]](mtcars[[var]])
 }
+
+mtcars_two
+mtcars
+
+#p322 For loops and functional programming
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+###computing mean of every column using a for loop
+output <- vector("double", length(df))
+for (i in seq_along(df)) {
+  output[[i]] <- mean(df[[i]])
+}
+output
+
+####extract mean out of function
+col_mean <- function(df){
+  output <- vector("double", length(df))
+  for (i in seq_along(df)){
+    output[i] <- mean(df[[i]])
+  }
+  output
+}
+
+col_mean(df)
+
+###throw in a few more summary stats
+col_summary <- function(df, fun) {
+  out <- vector("double", length(df))
+  for (i in seq_along(df)){
+    out[i] <- fun(df[[i]])
+  }
+  out
+}
+
+col_summary(df, median)
+
+#p324 exs
+#1
+?apply
+for (i in names(mtcars)){
+  cat(i, "\n", sep="")
+}
+for (i in row.names(mtcars)){
+  cat(i, "\n", sep="")
+}
+
+#2
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10),
+  e = c("a", "a", "a", "a", "a", "b", "b", "b", "b", "b")
+)
+
+col_summary <- function(df, fun) {
+  is_num <- vector("logical", length(df))
+  for (i in seq_along(df)) {
+    is_num[i] <- is.numeric(df[[i]])
+  }
+  out <- vector("double", length(df[is_num]))
+  for (i in seq_along(df)[is_num]){
+    out[i] <- fun(df[[i]])
+  }
+  out
+}
+col_summary(df, median)
+
+###functional programming
+map_dbl(df, mean)
+map_dbl(df, median)
+map_dbl(df, sd)
+
+df %>% map_dbl(mean)
+df %>% map_dbl(median)
+df %>% map_dbl(sd)
+
+df %>% map_dbl(mean)
+#passing arguements
+df %>% map_dbl(mean, trim=0.5)
+
+#preserving names
+z <- list(x = 1:3, y = 4:5)
+map_int(z, length)
+?map()
+
+#shortcuts
+models <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(function(df) lm(mpg ~ wt, data = df))
+#or
+models <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(~lm(mpg ~ wt, data = .))
+
+#and output
+models %>% 
+  map(summary) %>% 
+  map_dbl(~.$r.squared)
+
+models %>% 
+  map(summary) %>% 
+  map_dbl("r.squared")
+
+#the wierdness of sapply
+x1 <- list(
+  c(0.27, 0.33, 0.56, 0.91),
+  c(0.33, 0.92, 0.81, 0.23), 
+  c(0.22, 0.33, 0.11, 0.14)
+)
+x2 <- list(
+  c(0.27, 0.33, 0.56, 0.91),
+  c(0.33, 0.92, 0.21, 0.23), 
+  c(0.22, 0.33, 0.11, 0.84)
+)
+
+threshold <- function(x, cutoff = 0.8) x[x > cutoff]
+x1 %>% sapply(threshold) %>% str()
+
+x2 %>% sapply(threshold) %>% str()
+
+###exs p 328
+#1
+#a
+mtcars_two %>% map(mean)
+#b
+nycflights13::flights %>% map(typeof)
+#c
+iris %>% map(function(x) length(unique(x)))
+#d
+c(-10, 0, 10, 100) %>% map(function(x) rnorm(10, x))
+
+#2
+mtcars %>% 
+  map(is.factor) %>% 
+  flatten_lgl()
+
+#3
+goulet <- 1:10
+g2 <- goulet %>% map(function(x) x + 10L)
+g3 <- goulet %>% map_int(function(x) x + 10L)
+
+map(1:5, runif)
+?runif
+
+#4
+map(-2:2, rnorm, n=5)
+map_dbl(-2:2, rnorm, n=5)
+
+#5
+lin_mod <- function(x){
+  lm(mpg ~ wt, data = x)
+}
+
+mtcars %>% 
+  split(.$cyl) %>%  map(lin_mod)
+
+mtcars %>% 
+  split(.$cyl) %>% 
+  map(function(df) lm(mpg ~ wt, data = df))
+
+###testing out safely
+safe_log <- safely(log)
+str(safe_log(10))
+str(safe_log("a"))
+
+x <- list(1, 10, "a")
+y <- x %>%
+  map(safely(log))
+str(y)
+
+#transpose that
+y <- y %>% transpose()
+y
+
+#use ok values
+is_ok <- y$error %>% map_lgl(is_null) 
+x[!is_ok] 
+y$result[is_ok] %>% flatten_dbl()
+
+#possibly
+x <- list(1, 10, "a")
+x %>% map_dbl(possibly(log, NA_real_))
+
+#quietly
+x <- list(1, -1)
+x %>% map(quietly(log)) %>% str()
+
+#mapping over multiple arguements
+#single argument
+mu <- list(5, 10, -3)
+mu %>% 
+  map(rnorm, n = 5) %>% 
+  str()
+
+#multiple, could iterate over indices
+sigma <- list(1, 5, 10)
+seq_along(mu) %>% 
+  map(~rnorm(5, mu[[.]], sigma[[.]])) %>% 
+  str()
+
+#or simpler with map2
+map2(mu, sigma, rnorm, n = 5) %>% str()
+
+#using pmap
+n <- list(1, 3, 5)
+args1 <- list(n, mu, sigma)
+args1 %>% 
+  pmap(rnorm) %>% 
+  str()
+
+#using named arguments
+args2 <- list(mean = mu, sd = sigma, n = n)
+args2 %>% 
+  pmap(rnorm) %>% 
+  str()
