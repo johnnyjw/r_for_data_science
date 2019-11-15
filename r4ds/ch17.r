@@ -505,3 +505,134 @@ args2 <- list(mean = mu, sd = sigma, n = n)
 args2 %>% 
   pmap(rnorm) %>% 
   str()
+
+#using a dataframe to send arguments
+params <- tribble(
+  ~mean,  ~sd,  ~n,
+  5,        1,   1,
+  10,       5,   3,
+  -3,     10,    5
+)
+
+params %>% 
+  pmap(rnorm)
+
+#applying different functions
+f <- c("runif", "rnorm", "rpois")
+param <- list(
+  list(min = -1, max = 1),
+  list(sd = 5),
+  list(lambda = 10)
+)
+
+invoke_map(f, param, n = 5) %>% str()
+
+#using a tribble
+sim <- tribble(
+  ~f,        ~params,
+  "runif", list(min = -1, max = 1),
+  "rnorm", list(sd = 5),
+  "rpois", list(lambda = 10)
+)
+sim %>%
+  mutate(sim = invoke_map(f, params, n = 10))
+
+#walk
+x <- list(1, "a", 3)
+
+x %>% 
+  walk(print)
+
+#pwalk
+library(ggplot2)
+plots <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(~ggplot(., aes(mpg, wt)) + geom_point())
+paths <- stringr::str_c(names(plots), ".pdf")
+
+pwalk(list(paths, plots), ggsave, path = tempdir())
+
+#predicate functions
+iris %>% 
+  keep(is.factor) %>% 
+  str()
+
+iris %>% 
+  discard(is.factor) %>% 
+  str()
+
+#some and every
+x <- list(1:5, letters, list(10))
+
+x %>% 
+  some(is_character)
+
+x %>% 
+  every(is_vector)
+
+#detect and detect_index
+x <- sample(10)
+x
+
+x %>% 
+  detect(~ . > 8)
+
+x %>% 
+  detect_index(~ . > 8)
+
+#head_while   and tail_while
+x %>%
+  head_while(~ . > 2)
+
+x %>%
+  tail_while(~ . > 2)
+
+###reduce
+dfs <- list(
+  age = tibble(name = "John", age=30),
+  sex = tibble(name = c("John", "Mary"), sex = c("M", "F")),
+  trt = tibble(name = "Mary", treatment = "A")
+)
+
+dfs %>% 
+  reduce(full_join)
+
+vs <- list(
+  c(1, 3, 5, 6, 10),
+  c(1, 2, 3, 7, 8, 10),
+  c(1, 2, 3, 4, 8, 9, 10)
+)
+
+vs %>% 
+  reduce(intersect)
+
+#accumulate
+x <- sample(10)
+x
+
+x %>% 
+  accumulate(`+`)
+
+
+##ex p 338
+#1
+me_every <- function(x, f){
+  currently <- TRUE
+  for (i in x) {
+     if (!f(i)) {
+       currently <- FALSE
+     }
+  }
+  currently
+}
+
+x <- list(1, '2', 3, 4, 5, 6, 7)
+
+x %>% 
+  me_every(is.numeric)
+
+x %>% 
+  me_every(~ . > 5)
+
+###cant do the shortcuts
+
