@@ -636,3 +636,35 @@ x %>%
 
 ###cant do the shortcuts
 
+#2
+col_sum2 <- function(df, func) {
+  df <- df %>% select_if(is.numeric)
+  df %>% map(~func(.))
+}
+col_sum2(iris, mean) %>% str()
+
+#3
+col_sum3 <- function(df, f) {
+  is_num <- sapply(df, is.numeric)
+  df_num <- df[, is_num]
+  
+  sapply(df_num, f)
+}
+
+df <- tibble(
+  x = 1:3,
+  y = 3:1,
+  z = c("a", "b", "c")
+)
+
+typeof(col_sum3(df, mean))
+
+typeof(col_sum3(df[1:2], mean))
+col_sum3(df[1:2], mean)
+
+typeof(col_sum3(df[1], mean))
+col_sum3(df[1], mean)
+
+typeof(col_sum3(df[3], mean))
+col_sum3(df[3], mean)
+#having no value to output, it does not produce a numeric vector...maybe needs initialisation first.
