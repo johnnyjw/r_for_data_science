@@ -93,3 +93,80 @@ sim1_mod <- lm(y ~ x, data = sim1)
 coef(sim1_mod)
 
 #exercises p 353
+#1
+sim1a <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1a_mod <- lm(y ~ x, data = sim1a)
+sim1a_coef <- coef(sim1a_mod)
+
+ggplot(sim1a, aes(x, y)) +
+  geom_point() +
+  geom_abline(intercept = sim1a_coef[1], slope = sim1a_coef[2])
+#outliers do affect the slope
+
+#2
+#ame ing it
+#model y prediction (linear slope)
+make_prediction <- function(a, data) {
+  a[1] + data$x * a[2]
+}
+
+measure_distance <- function(mod, data) {
+  diff <- data$y - make_prediction(mod, data)
+  mean(abs(diff))
+}
+best <- optim(c(0, 0), measure_distance, data = sim1a)
+
+ggplot(sim1a, aes(x, y)) +
+  geom_point() +
+  geom_abline(intercept = sim1a_coef[1], slope = sim1a_coef[2]) +
+  geom_abline(intercept = best$par[1], slope = best$par[2], colour="red",size=2)
+
+#3
+#a third dimension - where one vaue is essentially dependent on another and will be different dependent on what one of the two (x^0) variables is allocated
+#so an infinite number of combinations with the two values
+
+#visualising models
+#grid of values
+grid <- sim1 %>% 
+  data_grid(x)
+grid
+sim1
+
+grid <- grid %>% 
+  add_predictions(sim1_mod)
+grid
+
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(
+    aes(y = pred),
+    data = grid,
+    color = "red",
+    size = 1
+  )
+
+##residuals
+sim1_res <- sim1 %>%
+  add_residuals(sim1_mod)
+sim1_res
+
+ggplot(sim1_res, aes(resid)) +
+  geom_freqpoly(binwidth = 0.5)
+
+#recreating plot with residuals
+ggplot(sim1_res, aes(x, resid)) +
+  geom_ref_line(h = 0) +
+  geom_point()
+
+#ex pe 358
+#1
+loess_mod <- loess(y ~ x, data = sim1)
+grid <- sim1 %>% 
+  data_grid(x) %>% 
+  add_predictions(loess_mod)
+grid
+ggplot(grid, aes(x, pred)) +
+  geom_point()
