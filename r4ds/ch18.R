@@ -165,8 +165,49 @@ ggplot(sim1_res, aes(x, resid)) +
 #1
 loess_mod <- loess(y ~ x, data = sim1)
 grid <- sim1 %>% 
-  data_grid(x) %>% 
   add_predictions(loess_mod)
 grid
-ggplot(grid, aes(x, pred)) +
-  geom_point()
+ggplot(grid) +
+  geom_point(aes(x, y)) +
+  geom_line(aes(x, pred, color='red')) +
+  geom_smooth(aes(x, y, color="blue"))
+###it looks like the prediction with loess is the same as geom_smooth
+
+linear_mod <- lm(y ~ x, data = sim1)
+grid2 <- sim1 %>% 
+  add_predictions(linear_mod)
+grid2
+ggplot(grid2) +
+  geom_point(aes(x, y)) +
+  geom_line(aes(x, pred, color='red')) +
+  geom_smooth(aes(x, y, color="blue"))
+
+#2
+?add_predictions
+?gather_predictions
+
+grid3 <- sim1 %>% 
+  spread_predictions(loess_mod, linear_mod)
+grid3
+
+grid4 <- sim1 %>% 
+  gather_predictions(loess_mod, linear_mod)
+grid4
+
+#3
+?geom_ref_line
+ggplot(grid2) +
+  geom_point(aes(x, y)) +
+  geom_line(aes(x, pred, color='red')) +
+  geom_ref_line(h = 15)
+
+grid2a <- grid2 %>% 
+  add_residuals(loess_mod)
+grid2a
+ggplot(grid2a) +
+  geom_point(aes(x, resid)) +
+  geom_ref_line(h=0)
+
+#4
+ggplot(grid2a) +
+  geom_freqpoly(aes(resid))
