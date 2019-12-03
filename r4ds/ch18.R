@@ -211,3 +211,77 @@ ggplot(grid2a) +
 #4
 ggplot(grid2a) +
   geom_freqpoly(aes(resid))
+
+#formulas
+#model matrix shows the conversion of formula to function
+df <- tribble(
+  ~y,   ~x1,    ~x2,
+  4,      2,     5,
+  5,      1,     6
+)
+model_matrix(df, y ~ x1)
+
+#explicity drop column using -1
+model_matrix(df, y ~ x1 - 1)
+model_matrix(df, y~x1 + x2)
+
+df <- tribble(
+  ~ sex,  ~ response,
+  "male",   1,
+  "female", 2,
+  "male",   1
+)
+model_matrix(df, response ~ sex)
+
+#sim2 dataset
+ggplot(sim2) +
+  geom_point(aes(x, y))
+
+mod2 <- lm(y ~ x, data = sim2)
+grid <- sim2 %>% 
+  data_grid(x) %>% 
+  add_predictions(mod2)
+grid
+
+#visualise predictions
+ggplot(sim2, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_point(
+    data = grid,
+    aes(y = pred),
+    color = "red",
+    size = 4
+  )
+
+#you cannot make predictions about levels that you didn't observe
+tibble(x= "e") %>% 
+  add_predictions(mod2)
+
+#continuous + categorical
+ggplot(sim3, aes(x1, y)) +
+  geom_point(aes(color = x2))
+
+sim3
+
+#independent model
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+#interaction model
+mod2 <- lm(y ~ x1 * x2, data = sim3)
+
+grid <- sim3 %>% 
+  data_grid(x1, x2) %>% 
+  gather_predictions(mod1, mod2)
+grid
+
+ggplot(sim3, aes(x1, y, color = x2)) +
+  geom_point() +
+  geom_line(data = grid, aes(y = pred)) +
+  facet_wrap(~ model)
+
+#map residuals
+sim3 <- sim3 %>% 
+  gather_residuals(mod1, mod2)
+
+ggplot(sim3, aes(x1, resid, color = x2)) +
+  geom_point() +
+  facet_grid(model ~ x2)
