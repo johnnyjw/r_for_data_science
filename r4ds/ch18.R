@@ -285,3 +285,10 @@ sim3 <- sim3 %>%
 ggplot(sim3, aes(x1, resid, color = x2)) +
   geom_point() +
   facet_grid(model ~ x2)
+
+#continuous interaction
+#independent model
+mod1 <- lm(y ~ x1 + x2, data = sim4)
+#interaction model
+mod2 <- lm(y ~ x1 * x2, data = sim4)
+
