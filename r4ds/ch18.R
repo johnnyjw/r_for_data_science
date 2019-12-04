@@ -292,3 +292,38 @@ mod1 <- lm(y ~ x1 + x2, data = sim4)
 #interaction model
 mod2 <- lm(y ~ x1 * x2, data = sim4)
 
+grid <- sim4 %>% 
+  data_grid(
+    x1 = seq_range(x1, 5), 
+    x2 = seq_range(x2, 5)) %>% 
+  gather_predictions(mod1, mod2)
+grid
+
+###seq range interesting values
+seq_range(c(0.0123, 0.923423), n = 5)
+seq_range(c(0.0123, 0.923423), n = 5, pretty=TRUE)
+
+x1 <- rcauchy(100)
+seq_range(x1, n = 5)
+seq_range(x1, n = 5, trim = 0.1)
+seq_range(x1, n = 5, trim = 0.25)
+seq_range(x1, n = 5, trim = 0.5)
+
+x2 <- c(0, 1)
+seq_range(x2, n = 5)
+seq_range(x2, n = 5, expand = 0.1)
+seq_range(x2, n = 5, expand = 0.25)
+seq_range(x1, n = 5, expand = 0.5)
+
+#visualize: not so wonderful
+ggplot(grid, aes(x1, x2)) +
+  geom_tile(aes(fill = pred)) +
+  facet_wrap(~ model)
+#better - take slices (groups)
+ggplot(grid, aes(x1, pred, color = x2, group = x2)) +
+  geom_line() +
+  facet_wrap(~ model)
+
+ggplot(grid, aes(x2, pred, color = x1, group = x1)) +
+  geom_line() +
+  facet_wrap(~ model)
