@@ -327,3 +327,49 @@ ggplot(grid, aes(x1, pred, color = x2, group = x2)) +
 ggplot(grid, aes(x2, pred, color = x1, group = x1)) +
   geom_line() +
   facet_wrap(~ model)
+
+#transformations
+df <- tribble(
+  ~y, ~x,
+  1,  1, 
+  2,  2, 
+  3,  3
+)
+
+#interprets as multi variables, which are actually the same and weeds out redundancies
+model_matrix(df, y ~ x^2 + x)
+#interprets as transformation
+model_matrix(df, y ~ I(x^2) + x)
+
+#poly function
+model_matrix(df, y ~ poly(x, 2))
+
+#natural splines
+library(splines)
+model_matrix(df, y ~ ns(x, 2))
+
+#example of approximating non-linear system
+sim5 <- tibble(
+  x = seq(0, 3.5 * pi, length = 50),
+  y = 4 * sin(x) + rnorm(length(x))
+)
+
+ggplot(sim5, aes(x, y)) +
+  geom_point()
+
+#fit to data
+mod1 <- lm(y ~ ns(x, 1), data = sim5)
+mod2 <- lm(y ~ ns(x, 2), data = sim5)
+mod3 <- lm(y ~ ns(x, 3), data = sim5)
+mod4 <- lm(y ~ ns(x, 4), data = sim5)
+mod5 <- lm(y ~ ns(x, 5), data = sim5)
+
+grid <- sim5 %>% 
+  data_grid(x = seq_range(x, n = 50, expand = 0.1)) %>% 
+  gather_predictions(mod1, mod2, mod3, mod4, mod5, .pred = "y")
+
+ggplot(sim5, aes(x, y)) +
+  geom_point() +
+  geom_line(data = grid, color = "red") +
+  facet_wrap(~ model)
+# extrapolation outside data range is very bad!
