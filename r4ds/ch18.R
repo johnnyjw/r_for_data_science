@@ -373,3 +373,31 @@ ggplot(sim5, aes(x, y)) +
   geom_line(data = grid, color = "red") +
   facet_wrap(~ model)
 # extrapolation outside data range is very bad!
+
+#exs p 371
+#1 sim2 without intercept
+#sim2 dataset
+ggplot(sim2) +
+  geom_point(aes(x, y))
+
+mm1 <- model_matrix(sim2, y ~ x)
+mm1a <- model_matrix(sim2, y ~ x - 1)
+
+mod2a <- lm(y ~ x - 1, data = sim2)
+grid <- sim2 %>% 
+  data_grid(x) %>% 
+  gather_predictions(mod2, mod2a)
+grid
+
+#visualise predictions
+ggplot(sim2, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_point(
+    data = grid,
+    aes(y = pred),
+    color = "red",
+    size = 4
+  )
+#a very marginal impact on intercept on the categorical stuff
+
+#2 model matrix investigations
