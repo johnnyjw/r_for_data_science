@@ -401,3 +401,11 @@ ggplot(sim2, aes(x)) +
 #a very marginal impact on intercept on the categorical stuff
 
 #2 model matrix investigations
+model_matrix(sim3, y ~ x1 + x2)
+sim3
+jim <- sim3
+model_matrix(sim3, y ~ x1 * x2)
+
+model_matrix(sim4, y ~ x1 + x2)
+sim4
+model_matrix(sim4, y ~ x1 * x2)
