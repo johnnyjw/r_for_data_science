@@ -409,3 +409,44 @@ model_matrix(sim3, y ~ x1 * x2)
 model_matrix(sim4, y ~ x1 + x2)
 sim4
 model_matrix(sim4, y ~ x1 * x2)
+
+#4
+#continuous interaction
+#independent model
+mod1 <- lm(y ~ x1 + x2, data = sim4)
+#interaction model
+mod2 <- lm(y ~ x1 * x2, data = sim4)
+
+s4r <- sim4 %>% 
+  gather_residuals(mod1, mod2)
+s4r
+
+ggplot(s4r, aes(x1, x2)) +
+  geom_tile(aes(fill = resid)) +
+  facet_wrap(~ model)
+
+
+ggplot(s4r, aes(x1, resid, color=model, group=model)) +
+  geom_point() +
+  facet_wrap(~x2) +
+  geom_ref_line(h=0)
+
+ggplot(s4r, aes(x2, resid, color=model, group=model)) +
+  geom_point() +
+  facet_wrap(~x1) +
+  geom_ref_line(h=0)
+
+#missing values
+df <- tribble(
+  ~x, ~y,
+  1, 2.2,
+  2, NA,
+  3, 3.5,
+  4, 8.3,
+  NA, 10
+)
+mod <- lm(y ~ x, data = df)
+
+mod <- lm(y ~ x, data = df, na.action = na.exclude)
+
+nobs(mod)
