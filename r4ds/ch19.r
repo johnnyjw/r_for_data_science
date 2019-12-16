@@ -89,3 +89,34 @@ diamonds2 %>%
 #exs page 384
 #3 very high and very low residuals
 #the above filter where lresidual is above 1
+d2r <- diamonds2 %>% 
+  filter(abs(lresid2) > 1) %>% 
+  add_predictions(mod_diamond2) %>% 
+  mutate(pred = round(2 ^ pred)) %>% 
+  select(price, pred, carat:table, x:z) %>% 
+  arrange(price)
+# a lot of fair cut diamonds overpriced and two underpriced, which look like errors.
+
+#4 mod2 is not bad as a model. A large improvement over mod.
+# I would use it to give a guide and a large deviation between price and prediction
+# I would question.
+summary(mod_diamond)
+summary(mod_diamond2)
+
+#nyc flights daily
+daily <- flights %>% 
+  mutate(date = make_date(year, month, day)) %>% 
+  group_by(date) %>% 
+  summarise(n = n())
+daily
+
+ggplot(daily, aes(date, n)) +
+  geom_line()
+
+#distribution of flight numbers by day of week.
+daily <- daily %>% 
+  mutate(wday = wday(date, label = TRUE))
+ggplot(daily, aes(wday, n)) +
+  geom_boxplot()
+
+#a strong daily pattern.  Remove using a model
