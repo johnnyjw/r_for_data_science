@@ -120,3 +120,102 @@ ggplot(daily, aes(wday, n)) +
   geom_boxplot()
 
 #a strong daily pattern.  Remove using a model
+mod <- lm(n ~ wday, data = daily)
+
+grid <- daily %>% 
+  data_grid(wday) %>% 
+  add_predictions(mod, "n")
+
+ggplot(daily, aes(wday, n)) +
+  geom_boxplot() +
+  geom_point(data = grid, color = "red", size = 4)
+
+daily <- daily %>% 
+  add_residuals(mod)
+daily %>% 
+  ggplot(aes(date, resid)) +
+  geom_ref_line(h = 0) +
+  geom_line()
+
+#splitting up into days of the week to visualize causes of failure
+ggplot(daily, aes(date, resid, color = wday)) +
+  geom_ref_line(h = 0) +
+  geom_line()
+
+#some big residuals in some observations
+daily %>% 
+  filter(resid < -100)
+
+#and long term trends
+daily %>% 
+  ggplot(aes(date, resid)) +
+  geom_ref_line(h = 0) +
+  geom_line(color = "grey50") +
+  geom_smooth(se = FALSE, span = 0.20)
+
+#seasonal saturday effect
+daily %>% 
+  filter(wday == "Sat") %>% 
+  ggplot(aes(date, n)) +
+  geom_point() +
+  geom_line() +
+  scale_x_date(
+    NULL,
+    date_breaks = "1 month",
+    date_labels = "%b"
+  )
+
+###school term
+term <- function(date) {
+  cut(date,
+      breaks = ymd(20130101, 20130605, 20130825, 20140101),
+      labels = c("spring", "summer", "fall"))
+}
+
+daily <- daily %>% 
+  mutate(term = term(date))
+
+daily %>% 
+  filter(wday == "Sat") %>% 
+  ggplot(aes(date, n, color = term)) +
+  geom_point(alpha = 1/3) +
+  geom_line() +
+  scale_x_date(
+    NULL,
+    date_breaks = "1 month",
+    date_labels = "%b"
+  )
+
+daily %>% 
+  ggplot(aes(wday, n, color = term)) +
+  geom_boxplot()
+
+#so a bit of variation between terms.  Try fitting day-of-week for term.
+mod1 <- lm(n ~ wday, data = daily)
+mod2 <- lm(n ~ wday * term, data = daily)
+
+daily %>% 
+  gather_residuals(without_term = mod1, with_term = mod2) %>% 
+  ggplot(aes(date, resid, color = model)) +
+  geom_line(alpha=0.75)
+
+#model improved, but not as much as hoped
+
+grid <- daily %>% 
+  data_grid(wday, term) %>% 
+  add_predictions(mod2, "n")
+
+ggplot(daily, aes(wday, n)) +
+  geom_boxplot() +
+  geom_point(data = grid, color = "red") +
+  facet_wrap(~ term)
+
+#some seasons have lots of outliers that are impacting on the model.
+#perhaps try a model that is robust over outliers
+mod3 <- MASS::rlm(n ~ wday * term, data = daily)
+
+daily %>% 
+  add_residuals(mod3, "resid") %>% 
+  ggplot(aes(date, resid)) +
+  geom_hline(yintercept = 0, size = 2, color = "white") +
+  geom_line()
