@@ -219,3 +219,30 @@ daily %>%
   ggplot(aes(date, resid)) +
   geom_hline(yintercept = 0, size = 2, color = "white") +
   geom_line()
+
+#bundling computed variables into a function
+compute_vars <- function(data) {
+  data %>%
+    mutate(
+      term = term(date),
+      wday = wday(date, label = TRUE)
+    )
+}
+
+#OR stick it into the model
+wday2 <- function(x) wday(x, label=TRUE)
+mod3 <- lm(n ~ wday2(date) * term(date), data = daily)
+
+#introducing random splines to fit not completely linear models
+library(splines)
+mod <- MASS::rlm(n ~ wday * ns(date, 5), data = daily)
+
+daily %>% 
+  data_grid(wday, date = seq_range(date, n = 13)) %>% 
+  add_predictions(mod) %>% 
+  ggplot(aes(date, pred, color = wday)) +
+     geom_line() +
+     geom_point()
+
+#ex p394 
+#3
