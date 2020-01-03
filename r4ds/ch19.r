@@ -246,3 +246,22 @@ daily %>%
 
 #ex p394 
 #3
+daily2 <- daily %>% 
+  mutate(wday_char = as.character(wday)) %>% 
+  mutate(term_char = as.character(term)) %>% 
+  mutate(wday_term = 
+           ifelse(wday == 'Sat',
+                  paste(wday_char, "-", term_char, sep=""),
+                  wday_char)
+         ) %>% 
+  mutate(wday_term_fct = as.factor(wday_term))
+
+mod1 <- lm(n ~ wday * term, data = daily2)
+mod2 <- lm(n ~ wday_term_fct, data = daily2)
+mod3 <- lm(n ~ wday, data = daily2)
+
+daily2 %>% 
+  gather_residuals(with_term = mod1, with_wday_term = mod2, wday_only = mod3) %>% 
+  ggplot(aes(date, resid, color = model)) +
+  geom_line(alpha=1)
+## so performs a little better in spring and a little worse in late summer
