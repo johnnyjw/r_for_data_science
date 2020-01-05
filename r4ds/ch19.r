@@ -265,3 +265,99 @@ daily2 %>%
   ggplot(aes(date, resid, color = model)) +
   geom_line(alpha=1)
 ## so performs a little better in spring and a little worse in late summer
+
+#4
+make_wday_term <- function(wday, term){
+  wday_char <- as.character(wday)
+  term_char <- as.character(term)
+  if (wday_char == 'Sat') paste(wday_char, "-", term_char, sep="")
+  else wday_char
+}
+
+
+#get holiday dates in
+holiday_former <- function(date) 
+  {
+  if (month(date) == 1 && mday(date) == 1) 1
+  else if (month(date) == 7 && mday(date) == 4) 1
+  else if (month(date) == 12 && mday(date) == 25) 1
+  #mlk day
+  else if (month(date) == 1 && mday(date) %in% seq(15, 21) && wday(date) == 2) 1
+  #memorial day
+  else if (month(date) == 5 && mday(date) %in% seq(25, 31) && wday(date) == 2) 1
+  #labor day
+  else if (month(date) == 9 && mday(date) %in% seq(1, 7) && wday(date) == 2) 1
+  #thanksgiving day
+  else if (month(date) == 11 && mday(date) %in% seq(24, 30) && wday(date) == 5) 1
+  else 0
+}
+
+daily2 <- daily %>%
+  mutate(wday_term = map2_chr(wday, term, make_wday_term)) %>%
+  mutate(wday_term_fct = as.factor(wday_term)) %>%
+  mutate(holiday = map_dbl(date, holiday_former)) %>% 
+  mutate(wday_holiday = ifelse(holiday == 1, "Holiday", wday_term)) %>% 
+  mutate(wday_holiday_fct = as.factor(wday_holiday))
+
+mod1 <- lm(n ~ wday, data = daily2)
+mod2 <- lm(n ~ wday_term_fct, data = daily2)
+mod3 <- lm(n ~ wday_holiday_fct, data = daily2)
+
+daily2 %>% 
+  gather_residuals(wday = mod1, with_wday_term = mod2, wday_holiday_fct = mod3) %>% 
+  ggplot(aes(date, resid, color = model)) +
+  geom_line(alpha=1)
+###some improvement on the big residuals, but some induced overestimates. 
+
+#5
+daily2 <- daily2 %>% 
+  mutate(month = month(date, label=TRUE))
+
+mod1 <- lm(n ~ wday, data = daily2)
+mod2 <- lm(n ~ wday * term, data = daily2)
+mod3 <- lm(n ~ wday * month, data = daily2)
+
+daily2 %>% 
+  gather_residuals(wday = mod1, wday_term = mod2, wday_month = mod3) %>% 
+  ggplot(aes(date, resid, color = model)) +
+  geom_line(alpha=1)
+#### averages across month, but term borders and holidays occur within months
+
+#6
+#The incoporation of the splines on weekday using * makes predictions closer
+#just splitting date into 5 does not do much
+mod <- MASS::rlm(n ~ wday + ns(date, 5), data = daily)
+
+daily %>% 
+  data_grid(wday, date = seq_range(date, n = 13)) %>% 
+  add_predictions(mod) %>% 
+  ggplot(aes(date, pred, color = wday)) +
+  geom_line() +
+  geom_point()
+
+#7
+#break down distance of evening flights
+flights %>% 
+  filter(sched_dep_time >= 2000) %>% 
+  mutate(date = make_date(year, month, day)) %>% 
+  mutate(wday = wday(date, label = TRUE)) %>% 
+  ggplot() +
+    geom_bar(aes(wday, distance),stat = "summary", fun.y = "mean")
+###ever so slightly more on sunday than weekdays
+
+#8 
+library(forcats)
+levels(daily2$wday)
+changed_levels <- c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun")
+
+reorder_days <- function(wday) fct_reorder(wday, changed_levels)
+
+flights %>% 
+  filter(sched_dep_time >= 2000) %>% 
+  mutate(date = make_date(year, month, day)) %>% 
+  mutate(wday = wday(date, label = TRUE)) %>% 
+  mutate(wday = fct_relevel(wday, changed_levels)) %>% 
+  ggplot() +
+  geom_bar(aes(wday, distance),stat = "summary", fun.y = "mean")
+  
+
