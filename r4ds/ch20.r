@@ -176,3 +176,121 @@ regressionny <- ny_by_country %>%
 
 regressionny %>% 
   filter(country=='Rwanda')
+
+ny_glance_rw <- ny_glance_rw %>% 
+  mutate(c = 41.5,
+         x = -2.74*norm_year,
+         x2 = (norm_year^2)*0.290,
+         x3 = (norm_year^3)*12
+  )
+
+# looking at coefficients
+ny_glance_rw %>% 
+  ggplot(aes(norm_year, lifeExp)) +
+  geom_point()+
+  geom_line(aes(norm_year, c, color='red')) +
+  geom_line(aes(norm_year, x, color='green')) +
+  geom_line(aes(norm_year, x2)) +
+  geom_line(aes(norm_year, 3))
+
+#look at africa, they are the worst-fitting models
+glance %>% 
+  ggplot(aes(continent, r.squared)) +
+  geom_jitter(width = 0.5)
+
+#2 ggbeeswarm
+library(ggbeeswarm)
+glance %>% 
+  ggplot(aes(continent, r.squared)) +
+  geom_quasirandom(aes(color=continent))
+
+#3 back on unnest
+nodrop <- by_country %>% 
+  mutate(glance = map(model, broom::glance)) %>% 
+  unnest(glance)
+
+nodrop %>% 
+  filter(r.squared < 0.25) %>% 
+  unnest(data, .drop = TRUE) %>% 
+  ggplot(aes(year, lifeExp, color = country)) +
+  geom_line()
+
+#p 409 looking at lists in columns
+data.frame(x = list(1:3, 3:5))
+# forcing them into lists with I
+data.frame(x = I(list(1:3, 3:5)),
+          y = c("1, 2", "3, 4, 5"))
+#tibble does it nicer
+tibble(x = list(1:3, 3:5),
+       y = c("1, 2", "3, 4, 5"))
+
+#nesting
+#with grouped data frame
+gapminder %>% 
+  group_by(country, continent) %>% 
+  nest()
+#with ungrouped data frame
+gapminder %>%
+  nest(year:gdpPercap)
+
+#vectorized functions
+df <- tribble(
+  ~x1,
+  "a, b, c",
+  "d, e, f"
+  )
+
+df %>% 
+  mutate(x2 = stringr::str_split(x1, ","))
+
+df %>% 
+  mutate(x2 = stringr::str_split(x1, ",")) %>% 
+  unnest()
+
+#using map
+sim <- tribble(
+  ~f,         ~params,
+  "runif",  list(min = -1, max = -1),
+  "rnorm",  list(sd = 5),
+  "rpois",  list(lambda = 10)
+)
+
+sim %>% 
+  mutate(sims = invoke_map(f, params, n = 10))
+
+# Vectorised Functions
+#summaraize doesnt work with quantile
+mtcars %>% 
+  group_by(cyl) %>%
+  summarize(q = quantile(mpg))
+
+# wrap in a list!
+mtcars %>% 
+  group_by(cyl) %>%
+  summarize(q = list(quantile(mpg)))
+
+# with the quantile function, to unnest you also need the probabilities
+probs <- c(0.01, 0.25, 0.5, 0.75, 0.99)
+mtcars %>% 
+  group_by(cyl) %>%
+  summarize(p = list(probs), q = list(quantile(mpg))) %>% 
+  unnest()
+
+#from named list
+x <- list(
+  a=1:3,
+  b=3:4,
+  c=6:11
+)
+df <- enframe(x)
+df
+
+# then iterate using map2
+df %>% 
+  mutate(
+    smry = map2_chr(
+      name,
+      value,
+      ~ stringr::str_c(.x, ": ", .y[1])
+    )
+  )
