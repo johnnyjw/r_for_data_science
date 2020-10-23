@@ -317,3 +317,51 @@ mtcars %>%
   summarize_each(funs(list))
 
 
+#p416 Simplifying list-columns
+df <- tribble(
+  ~x,
+  letters[1:5],
+  1:2,
+  runif(5)
+)
+
+
+df %>% mutate(
+  type = map_chr(x, typeof),
+  length = map_int(x, length)
+)
+
+##named lists analysis
+df <- tribble (
+  ~x,
+  list(a = 1, b = 2),
+  list(a=2, c = 4)
+)
+
+df %>% mutate(
+  a = map_dbl(x, "a"),
+  b = map_dbl(x, "b", .null = NA_real_)
+)
+
+# p 417 unnesting
+tibble(x = 1:2, y = list(1:4, 1)) %>% unnest(y)
+
+
+# OK, because y and z have the same number of elements in every row
+df1 <-  tribble(
+  ~x,      ~y,               ~z,
+  1, c("a", "b")  , 1:2,
+  2, "c",           3
+)
+df1
+
+df1 %>% unnest(y, z)
+
+# Doesn't work because y and z have different number of elements
+df2 <-  tribble(
+  ~x,      ~y,               ~z,
+  1, c("a", "b")  , 1:2,
+  2, c("b", "c", "d"),           3:4
+)
+df2
+df2 %>% unnest(y, z)
