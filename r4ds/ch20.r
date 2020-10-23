@@ -294,3 +294,26 @@ df %>%
       ~ stringr::str_c(.x, ": ", .y[1])
     )
   )
+
+#ex p 414
+#3
+mtcars %>% 
+  group_by(cyl) %>%
+  summarize(q = list(quantile(mpg))) %>% 
+  unnest()
+
+mtcars %>% 
+  group_by(cyl) %>%
+  summarize(q = list(quantile(mpg), names=TRUE)) %>% 
+  unnest()
+
+
+quantile((mtcars$mpg), names=FALSE)
+
+
+#4
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize_each(funs(list))
+
+
