@@ -2,9 +2,7 @@
 title: "Diamond sizes"
 author: "Jonathan Wharton"
 date: "24/10/2020"
-output:
-  pdf_document: default
-  html_document: default
+output: html_document
 ---
 
 ```{r setup, include=FALSE}

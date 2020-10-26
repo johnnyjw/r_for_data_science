@@ -1,0 +1,33 @@
+---
+title: "21b_ex428"
+author: "JJW"
+date: "October 24, 2020"
+output: html_document
+---
+
+# My Very Simple CV [^1]
+
+
+## Education
+* **2001** PhD Otago University
+* **1993** BSc(Hons) Victoria University of Wellington
+
+
+## Employment
+
+|----------------|
+* **2020** Roche
+* **2019** PPD
+* **2017** IQVIA
+|----------------|
+ 
+ > "This Guy is pretty awesome" Elvis Presley 
+
+
+
+
+
+
+
+
+[^1]: Yes, I know I know, it's pretty crap
