@@ -1,0 +1,47 @@
+---
+title: "21_ex434_4"
+author: "jjw"
+date: "27/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+
+
+```{r a}
+
+print(lubridate::now())
+x <- 1
+
+```
+
+
+```{r b, dependson="a"}
+
+print(lubridate::now())
+y <- x + 1
+
+```
+
+
+```{r c, dependson="a"}
+
+print(lubridate::now())
+z <- x * 2
+
+```
+
+
+```{r d, dependson=c("c", "b")}
+
+print(lubridate::now())
+w <- y + z
+
+```
+
+

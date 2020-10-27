@@ -1,0 +1,77 @@
+--
+title: "Diamond sizes"
+date: 2016-08-25
+output: html_document
+---
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(tidyverse)
+smaller <- diamonds %>% 
+  filter(carat <= 2.5)
+
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+We have data about `r comma(nrow(diamonds))` diamonds. Only 
+`r comma(nrow(diamonds) - nrow(smaller))` are larger than
+2.5 carats (that is, `r comma((nrow(diamonds) - nrow(smaller))*100/nrow(diamonds))` %). The distribution of the remainder is shown
+below:
+
+```{r, echo = FALSE}
+smaller %>% 
+  ggplot(aes(carat)) + 
+  geom_freqpoly(binwidth = 0.01)
+```
+
+##  The largest 20 Diamonds
+
+```{r get_largest_20}
+
+largest_20 <- diamonds %>% 
+  mutate(rank=row_number(desc(carat))) %>% 
+  mutate(size_group = if_else(rank <= 20, "Top 20", "Others")) %>% 
+  arrange(rank)
+```
+
+
+```{r Size_Cut}
+largest_20 %>% 
+  ggplot() +
+    geom_bar(aes(x = size_group, fill = cut),
+             position = "fill")
+
+```
+A massive increase in fair diamonds and a massive decrease in ideal diamonds
+
+## Diamond size vs color
+```{r Size_color}
+largest_20 %>% 
+  ggplot() +
+    geom_bar(aes(x = size_group, fill = color),
+             position = "fill")
+
+```
+Colour J,I, H dominate the top 20
+
+## Diamond size vs clarity
+```{r Size_clarity}
+largest_20 %>% 
+  ggplot() +
+    geom_bar(aes(x = size_group, fill = clarity),
+             position = "fill")
+
+```
+The Top 20 are almost completely I1, SL2 and SL2
+
+
+```{r}
+knitr::kable(
+  largest_20 %>% 
+    filter(rank <= 20) %>% 
+    select(carat:clarity, price, rank),
+  caption = "Characteristics from the largest 20 diamonds"
+)
+
+```
+
