@@ -1,0 +1,64 @@
+---
+title: "Diamond sizes"
+date: 2016-08-25
+output: html_document
+---
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(dplyr)
+smaller <- diamonds %>% 
+  filter(carat <= 2.5)
+sizes <- c("small", "medium", "large")
+dg <- diamonds %>% 
+  mutate(size_group = cut_number(carat, 3, labels=sizes)) 
+
+knitr::opts_chunk$set(
+  echo = FALSE
+)
+```
+
+We have data about `r nrow(diamonds)` diamonds. Only 
+`r nrow(diamonds) - nrow(smaller)` are larger than
+2.5 carats. The distribution of the remainder is shown
+below:
+
+```{r, echo = FALSE}
+smaller %>% 
+  ggplot(aes(carat)) + 
+  geom_freqpoly(binwidth = 0.01)
+```
+
+The peaks represent whole number sizes
+
+
+## Diamond size vs cut
+```{r Size_Cut}
+dg %>% 
+  ggplot() +
+    geom_bar(aes(x = size_group, fill = cut),
+             position = "fill")
+
+```
+Here, you can see that proportioin of Ideal goes down with size, but there is not a linear relationship with the other values, for example proportion of fair goes up in medium but down in large, same with good.
+
+## Diamond size vs color
+```{r Size_color}
+dg %>% 
+  ggplot() +
+    geom_bar(aes(x = size_group, fill = color),
+             position = "fill")
+
+```
+Here, you can see proportion of D and E go down with size while the proportions of H, I and J go up a lot with size
+
+## Diamond size vs clarity
+```{r Size_clarity}
+dg %>% 
+  ggplot() +
+    geom_bar(aes(x = size_group, fill = clarity),
+             position = "fill")
+
+```
+The proportion of SI1 and SI2 go down with increasing size while the proportions of IF, WS1 and WS2 all go up with increasing size.
+
