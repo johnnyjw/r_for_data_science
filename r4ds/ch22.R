@@ -258,3 +258,33 @@ ggplot(mpg, aes(displ, hwy)) +
     vjust = c("top", "bottom", "top", "bottom"),
     hjust = c("right", "right", "left", "left")
   )
+
+# 2
+?annotate
+max_disp <- max(mpg$displ)
+max_hwy <- max(mpg$hwy)
+
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  annotate("text", x=max_disp, y=max_hwy, label = "doosh")
+
+# 3  faceting with labels
+#  label tibble also has to have the same facet variable
+?geom_text
+class_avg <- mpg %>% 
+  group_by(class) %>% 
+  summarize(
+    displ = median(displ),
+    hwy = median(hwy)
+  )
+
+
+ggplot(mpg, aes(displ, hwy)) +
+  ggrepel::geom_label_repel(aes(label = class),
+                            data = class_avg,
+                            size = 6,
+                            label.size = 0, 
+                            segment.color = NA) +
+  geom_point() +
+  facet_wrap(vars(class))
