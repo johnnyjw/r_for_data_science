@@ -288,3 +288,141 @@ ggplot(mpg, aes(displ, hwy)) +
                             segment.color = NA) +
   geom_point() +
   facet_wrap(vars(class))
+
+# 4
+
+?geom_label
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_label(aes(label = model,
+                 alpha = 0.8,
+                 fill=factor(class)), 
+             data = best_in_class,
+             nudge_y = 2)
+
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_label(aes(label = model,
+                 alpha = 0.8,
+                 color=factor(class)), 
+             data = best_in_class,
+             nudge_y = 2)
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_label(aes(label = model,
+                 alpha = 0.8,
+                 color=factor(class),
+                 family = "serif"), 
+             data = best_in_class,
+             nudge_y = 2)
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_label(aes(label = model,
+                 alpha = 0.8,
+                 color=factor(class),
+                 fontface = 'bold'), 
+             data = best_in_class,
+             nudge_y = 2)
+
+# 5 arrow
+? arrow
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_segment(aes(2.5, 20, xend = 3.5, yend = 20),
+               arrow = arrow(length = unit(0.03, "npc"))) +
+  # angle - change from 30 default
+  geom_segment(aes(2.5, 25, xend = 3.5, yend = 33),
+               arrow = arrow(angle = 60,
+                             length = unit(0.09, "npc"))) +
+  # ends both - and type closed
+  geom_segment(aes(3.5, 40, xend = 4.5, yend = 40),
+               arrow = arrow(length = unit(0.03, "npc"),
+                             ends = "both",
+                             type = "closed"))
+
+
+# 451 scales
+#these two the same
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class))
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  scale_color_discrete()
+
+# 452 breaks/labels
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  scale_y_continuous(breaks = seq(15, 40, by = 5))
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  scale_x_continuous(labels = NULL) +
+  scale_y_continuous(labels = NULL)
+
+# 453 presidents
+presidential %>% 
+  mutate(id = 33 + row_number()) %>% 
+  ggplot(aes(start, id)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date(
+      NULL,
+      breaks = presidential$start,
+      date_labels = "'%y"
+    )
+
+# 454 legend position
+base <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class))
+
+base + theme(legend.position = "left")
+base + theme(legend.position = "top")
+base + theme(legend.position = "bottom")
+base + theme(legend.position = "right")
+
+base + theme(legend.position = "none")
+
+# 455 legend controls
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(se = FALSE) +
+  theme(legend.position = "bottom") +
+  guides(
+    color = guide_legend(
+      nrow = 1,
+      override.aes = list(size = 4)
+    )
+  )
+
+# 456 replacing scales
+ggplot(diamonds, aes(carat, price)) +
+  geom_bin2d()
+
+# log transform
+ggplot(diamonds, aes(log10(carat), log10(price))) +
+  geom_bin2d()
+
+# labels not nice...do this instead
+ggplot(diamonds, aes(carat, price)) +
+  geom_bin2d() +
+  scale_x_log10() +
+  scale_y_log10()
+
+# 456 color scales
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = drv))
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = drv)) +
+  scale_color_brewer(palette = "Set1")
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = drv, shape = drv)) +
+  scale_color_brewer(palette = "Set1")
