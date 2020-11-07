@@ -3,6 +3,7 @@ library(modelr)
 library(xlsx)
 library(readxl)
 
+
 #442
 ggplot(mpg, aes(displ, hwy)) +
   geom_point(aes(color = class)) +
@@ -426,3 +427,94 @@ ggplot(mpg, aes(displ, hwy)) +
 ggplot(mpg, aes(displ, hwy)) +
   geom_point(aes(color = drv, shape = drv)) +
   scale_color_brewer(palette = "Set1")
+
+# manual define 459
+presidential %>% 
+  mutate(id = 33 + row_number()) %>% 
+  ggplot(aes(start, id, color = party)) +
+  geom_point() +
+  geom_segment(aes(xend = end, yend = id)) +
+  scale_color_manual(
+    values = c(Republican = "red", Democratic = "blue")
+  )
+
+#color viridis
+df <- tibble(
+  x = rnorm(10000),
+  y = rnorm(10000)
+)
+
+
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  coord_fixed()
+
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  viridis::scale_fill_viridis() +
+  coord_fixed()
+
+# ex 460 #1
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  coord_fixed()
+
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  scale_color_gradient(low = "white", high = "red") +
+  coord_fixed()
+
+?scale_color_gradient
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  scale_fill_gradient(low = "white", high = "red") +
+  coord_fixed()
+
+# answer: should have used scale_fill_gradient rather than scale color!
+
+# 2
+?labs
+?scale_x_continuous
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  scale_x_continuous("melon farmer") +
+  labs(y="doosh")
+
+# 3 
+# a
+presidential %>% 
+  mutate(id = 33 + row_number()) %>% 
+  ggplot(aes(start, id, color = party)) +
+  geom_point() +
+  geom_segment(aes(xend = end, yend = id)) +
+  scale_color_manual(
+    values = c(Republican = "red", Democratic = "blue")
+  ) +
+  scale_x_date(
+    NULL,
+    breaks = presidential$start,
+    date_labels = "'%y"
+  )
+# 3b
+presidential %>% 
+  mutate(id = 33 + row_number()) %>% 
+  ggplot(aes(start, id, color = party)) +
+  geom_point() +
+  geom_segment(aes(xend = end, yend = id)) +
+  scale_color_manual(
+    values = c(Republican = "red", Democratic = "blue")
+  ) +
+  scale_x_date(
+    NULL,
+    breaks = presidential$start,
+    date_labels = "'%y"
+  ) +
+  scale_y_continuous("US President Number",
+                     breaks = seq(33, 45, by = 1),
+                     minor_breaks = NULL) +
+  ggrepel::geom_label_repel(
+    aes(label = name)
+  )
+
+prez <-  presidential
