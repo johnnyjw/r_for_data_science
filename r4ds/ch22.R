@@ -2,7 +2,9 @@ library(tidyverse)
 library(modelr)
 library(xlsx)
 library(readxl)
-
+library(ggrepel)
+library(lubridate)
+library(gridExtra)
 
 #442
 ggplot(mpg, aes(displ, hwy)) +
@@ -498,7 +500,8 @@ presidential %>%
   )
 # 3b
 presidential %>% 
-  mutate(id = 33 + row_number()) %>% 
+  mutate(id = 33 + row_number(),
+         x_label = id + 0.25) %>%
   ggplot(aes(start, id, color = party)) +
   geom_point() +
   geom_segment(aes(xend = end, yend = id)) +
@@ -517,4 +520,116 @@ presidential %>%
     aes(label = name)
   )
 
-prez <-  presidential
+breaks_df <- tibble(
+  number = seq(0, 76, by = 4)) %>% 
+    mutate(date_seq = ymd("1945-01-20") + dyears(number))
+
+
+
+presidential %>% 
+  mutate(id = 33 + row_number(),
+         y_label = id + 0.35) %>%
+  ggplot(aes(start, id, color = party)) +
+  geom_point() +
+  geom_segment(aes(xend = end, yend = id)) +
+  scale_color_manual(
+    values = c(Republican = "red", Democratic = "blue")
+  ) +
+  scale_x_date(
+    "Years covered by Presidency",
+    breaks = breaks_df$date_seq,
+    date_labels = "'%y"
+  ) +
+  scale_y_continuous("US President Number",
+                     breaks = seq(33, 45, by = 1),
+                     minor_breaks = NULL) +
+  guides(
+    color = guide_legend(
+      nrow = 2,
+      override.aes = list(size = 4,
+                          shape = "circle")
+    )
+  ) +
+  geom_label(
+    aes(start,
+        y_label,
+        label = name),
+    show.legend = FALSE
+  )
+
+# 4
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(aes(color = cut), alpha = 1/20) +
+  guides(
+    color = guide_legend(
+      override.aes = list(size = 4,
+                          alpha = 1/2)
+    ))
+
+
+# 461 zooming
+ggplot(mpg, mapping = aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth() +
+  coord_cartesian(xlim = c(5,7), ylim = c(10, 30))
+
+mpg %>% 
+  filter(displ >= 5, displ <= 7, hwy >= 10, hwy <= 30) %>% 
+    ggplot(mapping = aes(displ, hwy)) +
+      geom_point(aes(color = class)) +
+      geom_smooth() 
+
+suv <- mpg %>% filter(class == "suv")
+compact <- mpg %>% filter(class=="compact")
+
+p1 <- ggplot(suv, aes(displ, hwy, color = drv)) +
+  geom_point()
+p2 <- ggplot(compact, aes(displ, hwy, color = drv)) +
+  geom_point()
+
+grid.arrange(p1, p2, ncol=2)
+
+#share scales across multiple plots
+x_scale <- scale_x_continuous(limits = range(mpg$displ))
+y_scale <- scale_y_continuous(limits = range(mpg$hwy))
+col_scale <- scale_color_discrete(limits = unique(mpg$drv))
+
+p1 <- ggplot(suv, aes(displ, hwy, color = drv)) +
+  geom_point() +
+  x_scale +
+  y_scale +
+  col_scale
+p2 <- ggplot(compact, aes(displ, hwy, color = drv)) +
+  geom_point() +
+  x_scale +
+  y_scale +
+  col_scale
+
+grid.arrange(p1, p2, ncol=2)
+
+# themes p 462
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(se = FALSE) +
+  theme_bw()
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(se = FALSE) +
+  theme_light()
+
+# 464 saving
+ggsave('my_plot.pdf')
+
+# 466
+fig.width = 6
+out.width = .7
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+ggsave('my_plot_6.pdf')
+
+fig.width = 4
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+ggsave('my_plot_4.pdf')
+
